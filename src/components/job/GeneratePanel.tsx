@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ScoreRing } from "@/components/ScoreRing";
 import { Badge, Button, Card, ErrorBox, Field, Select, Spinner, Textarea } from "@/components/ui";
 import { api } from "@/lib/api";
-import { MODEL_LABELS, MODELS, type ModelAlias } from "@/lib/models";
+import { requestManual } from "@/lib/manual-client";
 import { TEMPERATURE_INFO } from "@/lib/prompts";
 import type { Temperature, Template } from "@/lib/types";
 import type { JobPayload } from "./types";
@@ -23,7 +23,6 @@ export function GeneratePanel({ data, reload, onOpen }: { data: JobPayload; relo
   const { job } = data;
   const [level, setLevel] = useState(1);
   const [template, setTemplate] = useState<Template>("classico");
-  const [model, setModel] = useState<ModelAlias>("opus");
   const [coverLetter, setCoverLetter] = useState(false);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -38,12 +37,15 @@ export function GeneratePanel({ data, reload, onOpen }: { data: JobPayload; relo
     setError(null);
     setSteps([]);
     try {
+      // Modo copiar e colar: a geração pausa a cada pedido manual e recomeça com a resposta.
+      for (;;) {
       const res = await fetch(`/api/jobs/${job.id}/generate`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ temperature, template, model, coverLetter, notes }),
+        body: JSON.stringify({ temperature, template, coverLetter, notes }), // motor e modelo: os do "Motor de IA"
       });
       if (!res.ok || !res.body) throw new Error((await res.json().catch(() => null))?.error ?? `Erro ${res.status}`);
+      let manual = null;
 
       // Lê o progresso em NDJSON: uma linha JSON por evento.
       const reader = res.body.getReader();
@@ -60,6 +62,7 @@ export function GeneratePanel({ data, reload, onOpen }: { data: JobPayload; relo
           const event = JSON.parse(line);
           if (event.type === "progress") setSteps((s) => [...s, event.detail ? `${event.step} (${event.detail})` : event.step]);
           if (event.type === "error") throw new Error(event.message);
+          if (event.type === "manual") manual = event.request;
           if (event.type === "done") {
             finished = true;
             reload();
@@ -67,7 +70,15 @@ export function GeneratePanel({ data, reload, onOpen }: { data: JobPayload; relo
           }
         }
       }
+      if (manual) {
+        setSteps((s) => [...s, `Aguardando sua resposta: ${manual.label}`]);
+        await requestManual(manual);
+        setSteps([]);
+        continue;
+      }
       if (!finished) throw new Error("A geração foi interrompida antes de terminar.");
+      break;
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -123,8 +134,7 @@ export function GeneratePanel({ data, reload, onOpen }: { data: JobPayload; relo
             </div>
           </fieldset>
 
-          <div className="grid gap-3 @md:grid-cols-2">
-            <Field label="Modelo visual">
+          <Field label="Modelo visual">
               <Select value={template} onChange={(e) => setTemplate(e.target.value as Template)}>
                 {Object.entries(TEMPLATES).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -133,16 +143,6 @@ export function GeneratePanel({ data, reload, onOpen }: { data: JobPayload; relo
                 ))}
               </Select>
             </Field>
-            <Field label="Modelo IA">
-              <Select value={model} onChange={(e) => setModel(e.target.value as ModelAlias)}>
-                {MODELS.map((m) => (
-                  <option key={m} value={m}>
-                    {MODEL_LABELS[m]}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
 
           <label className="flex items-start gap-2 text-sm text-fg">
             <input type="checkbox" className="mt-0.5 accent-neon" checked={coverLetter} onChange={(e) => setCoverLetter(e.target.checked)} />

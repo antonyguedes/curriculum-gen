@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DEFAULT_MODEL, MODELS } from "@/lib/claude";
+import { ManualRequired } from "@/lib/ai";
 import { fail, json } from "@/lib/http";
 import { findAdjacency, generateVersion } from "@/lib/pipeline";
 import { getJob, getProfile, getProfileDocs, saveJob } from "@/lib/store";
@@ -8,7 +8,7 @@ import { TemperatureSchema, TemplateSchema } from "@/lib/types";
 const Body = z.object({
   temperature: TemperatureSchema.default("equilibrado"),
   template: TemplateSchema.default("classico"),
-  model: z.enum(MODELS).default(DEFAULT_MODEL),
+  model: z.string().optional(),
   coverLetter: z.boolean().default(false),
   notes: z.string().default(""),
 });
@@ -44,7 +44,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         await saveJob(fresh);
         send({ type: "done", versionId: version.id });
       } catch (e) {
-        send({ type: "error", message: e instanceof Error ? e.message : String(e) });
+        if (e instanceof ManualRequired) send({ type: "manual", request: e.request });
+        else send({ type: "error", message: e instanceof Error ? e.message : String(e) });
       } finally {
         controller.close();
       }

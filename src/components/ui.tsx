@@ -143,6 +143,7 @@ export function Modal({
   tone = "neon",
   children,
   footer,
+  wide,
 }: {
   open: boolean;
   onClose: () => void;
@@ -151,6 +152,8 @@ export function Modal({
   tone?: "neon" | "bad";
   children?: ReactNode;
   footer?: ReactNode;
+  /** Diálogo largo (conteúdo extenso, como o modo copiar e colar). */
+  wide?: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -191,7 +194,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={cx("relative w-[min(94vw,480px)] animate-rise rounded-3xl p-6", tone === "bad" ? "tile shadow-[0_0_80px_-30px_rgb(255_77_109/0.9)]" : "rainbow-border rainbow-halo")}
+        className={cx("relative max-h-[92dvh] animate-rise overflow-y-auto rounded-3xl p-6", wide ? "w-[min(94vw,720px)]" : "w-[min(94vw,480px)]", tone === "bad" ? "tile shadow-[0_0_80px_-30px_rgb(255_77_109/0.9)]" : "rainbow-border rainbow-halo")}
       >
         <div className="flex items-start gap-4">
           {icon && <span className={cx("grid h-11 w-11 shrink-0 place-items-center rounded-2xl border [&>svg]:h-5 [&>svg]:w-5", toneRing)}>{icon}</span>}

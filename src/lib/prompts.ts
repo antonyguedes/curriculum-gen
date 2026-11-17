@@ -133,7 +133,7 @@ REGRAS DE GROUNDING (inegociáveis, valem em qualquer nível de liberdade):
 REGRAS DE OTIMIZAÇÃO ATS:
 - Escreva todo o currículo em ${LANG_NAME[lang]}.
 - "headline": o título EXATO da vaga, seguido de " | " e 3 ou 4 tecnologias centrais que o candidato realmente tem.
-- "summary": 3 a 4 linhas (50 a 90 palavras), com anos de experiência e as keywords obrigatórias mais pesadas que o candidato tem. Sem primeira pessoa explícita e sem clichês.
+- "summary": 3 a 4 linhas (50 a 90 palavras), com o tempo de experiência em anos inteiros (com menos de 1 ano, não cite tempo de experiência; nunca use frações como "0,4 ano") e as keywords obrigatórias mais pesadas que o candidato tem. Sem primeira pessoa explícita e sem clichês.
 - "skill_groups": 3 a 5 grupos com rótulos curtos; primeiro os termos da vaga, sempre na grafia da vaga. Quando houver sigla, use "Forma por Extenso (SIGLA)". Só habilidades que constam no perfil.
 - Bullets: verbo de ação forte + o que + como (tecnologias da vaga que o fato sustenta) + resultado. Uma a duas linhas, no máximo ~35 palavras.
 - Tempo verbal: conquistas e entregas sempre no passado, inclusive no cargo atual (pt: "Reduzi", "Implementei", "Liderei"; en: "Reduced", "Built", "Led"). Presente apenas para responsabilidades contínuas sem resultado fechado.

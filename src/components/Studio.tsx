@@ -1,10 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Cpu, Sparkles, Trash2, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { FLOW, FlowOrbit, ORBIT_RATIO, currentStep, spectrum, type FlowState } from "@/components/FlowOrbit";
+import { AiSettings } from "@/components/AiSettings";
 import { GeneratePanel } from "@/components/job/GeneratePanel";
+import { ManualBridge } from "@/components/ManualBridge";
 import { ResumeEditor } from "@/components/job/ResumeEditor";
 import type { JobPayload } from "@/components/job/types";
 import { DownloadStep } from "@/components/steps/DownloadStep";
@@ -12,6 +14,7 @@ import { ProfileEditor } from "@/components/steps/ProfileEditor";
 import type { JobRow } from "@/components/steps/types";
 import { VagaStep } from "@/components/steps/VagaStep";
 import { Button, ErrorBox, Modal, Select, cx } from "@/components/ui";
+import { PROVIDERS, type PublicAiSettings } from "@/lib/ai/catalog";
 import { api } from "@/lib/api";
 import { FLOW_STEPS, type FlowStep, type Profile } from "@/lib/types";
 
@@ -20,6 +23,8 @@ interface Nav {
   job?: string | null;
   v?: string | null;
   novo?: boolean;
+  /** Painel "Motor de IA" aberto por cima da etapa atual. */
+  ia?: boolean;
 }
 
 const isStep = (s: string | null): s is FlowStep => !!s && (FLOW_STEPS as readonly string[]).includes(s);
@@ -49,6 +54,7 @@ export function Studio() {
   const jobParam = params.get("job");
   const vParam = params.get("v");
   const creating = params.get("novo") === "1";
+  const iaOpen = params.get("ia") === "1";
 
   const [jobs, setJobs] = useState<JobRow[] | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -102,6 +108,7 @@ export function Studio() {
       if (job) q.set("job", job);
       if (v) q.set("v", v);
       if (next.novo) q.set("novo", "1");
+      if (next.ia) q.set("ia", "1");
       router.push(q.size ? `/?${q}` : "/", { scroll: false });
     },
     [router, step, jobParam, vParam],
@@ -122,12 +129,20 @@ export function Studio() {
   // Esc fecha o painel (a menos que um modal esteja aberto: ele fecha primeiro).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape" || !step || document.querySelector('[aria-modal="true"]')) return;
-      go({ step: null });
+      if (e.key !== "Escape" || document.querySelector('[aria-modal="true"]')) return;
+      if (iaOpen) navigate({}); // fecha a configuração e volta à etapa
+      else if (step) go({ step: null });
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [step, go]);
+  }, [step, go, iaOpen, navigate]);
+
+  /* ── motor de IA em uso (chip no canto da órbita) ── */
+  const [engine, setEngine] = useState<PublicAiSettings | null>(null);
+  const loadEngine = useCallback(() => api<PublicAiSettings>("/api/ai/settings").then(setEngine).catch(() => undefined), []);
+  useEffect(() => {
+    loadEngine();
+  }, [loadEngine]);
 
   /* ── estado do fluxo (vaga selecionada) ── */
   const job = jobs?.find((j) => j.id === selectedJobId) ?? null;
@@ -161,7 +176,7 @@ export function Studio() {
   const ratio = portrait ? ORBIT_RATIO.portrait : ORBIT_RATIO.landscape;
   const orbitWidth = box ? Math.max(0, Math.min(box.w, (box.h - 16) * ratio, portrait ? 640 : 1240)) : 0;
 
-  const open = !!step;
+  const open = !!step || iaOpen;
   const stepIndex = step ? FLOW.findIndex((f) => f.key === step) : -1;
   const meta = step ? FLOW[stepIndex] : null;
   const color = spectrum(Math.max(0, stepIndex) / FLOW.length);
@@ -235,6 +250,20 @@ export function Studio() {
         )}
       >
         <section ref={stageRef} className="relative min-h-[200px] flex-1">
+          {/* motor de IA em uso */}
+          <button
+            type="button"
+            onClick={() => (iaOpen ? navigate({}) : navigate({ ia: true }))}
+            aria-pressed={iaOpen}
+            className={cx(
+              "absolute left-0 top-0 z-20 flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition",
+              iaOpen ? "rainbow-border rainbow-halo text-fg" : "tile tile-hover text-muted hover:text-fg",
+            )}
+          >
+            <Cpu className="h-3.5 w-3.5 text-neon" strokeWidth={1.8} />
+            <span className="hidden sm:inline">Motor de IA ·</span>
+            <span className="font-medium text-fg">{engine ? PROVIDERS[engine.provider].label : "…"}</span>
+          </button>
           {box && (
             <div className="absolute inset-0 grid place-items-center">
               <FlowOrbit state={flow} portrait={portrait} style={{ width: orbitWidth }} selected={step} onSelect={(s) => go({ step: s === step ? null : s })}>
@@ -268,8 +297,30 @@ export function Studio() {
 
       </div>
 
+      {/* ── painel do motor de IA (por cima da etapa) ── */}
+      {iaOpen && (
+        <aside className="tile flex min-h-0 min-w-0 flex-1 animate-[panel-in_0.5s_cubic-bezier(0.16,1,0.3,1)_both] flex-col overflow-hidden rounded-3xl" aria-label="Motor de IA">
+          <header className="relative flex shrink-0 items-center gap-3 border-b border-white/[0.06] px-5 py-3.5">
+            <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-neon to-transparent" aria-hidden />
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-neon/60 text-neon shadow-[0_0_18px_-4px_rgb(61_225_255/0.9)]">
+              <Cpu className="h-[18px] w-[18px]" strokeWidth={1.6} />
+            </span>
+            <div className="min-w-0">
+              <p className="label-mono text-subtle">Configuração</p>
+              <h2 className="font-display text-base font-semibold leading-tight text-fg">Motor de IA</h2>
+            </div>
+            <Button variant="ghost" small className="ml-auto" aria-label="Fechar configuração" onClick={() => navigate({})}>
+              <X className="h-4 w-4" />
+            </Button>
+          </header>
+          <div className="@container min-h-0 flex-1 overflow-y-auto p-5">
+            <AiSettings onChanged={loadEngine} />
+          </div>
+        </aside>
+      )}
+
       {/* ── painel da etapa ── */}
-      {open && meta && (
+      {!iaOpen && open && meta && (
         <aside key={step} className="tile flex min-h-0 min-w-0 flex-1 animate-[panel-in_0.5s_cubic-bezier(0.16,1,0.3,1)_both] flex-col overflow-hidden rounded-3xl" aria-label={`Etapa ${meta.label}`}>
           <header className="relative flex shrink-0 items-center gap-3 border-b border-white/[0.06] px-5 py-3.5">
             <span className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} aria-hidden />
@@ -363,6 +414,8 @@ export function Studio() {
       >
         Há alterações no perfil que ainda não foram salvas.
       </Modal>
+
+      <ManualBridge />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { askClaude, FAST_MODEL } from "./claude";
+import { aiMode, askLLM } from "./ai";
 import { evaluate } from "./evaluate";
 import { checkLetter, hasErrors } from "./grounding";
 import { docsForPrompt, withDocuments, type DocText } from "./documents";
@@ -49,12 +49,15 @@ import {
 } from "./types";
 
 const MAX_FIX_ROUNDS = 2;
+/** No modo copiar e colar cada rodada é uma colagem a mais: uma correção basta. */
+const MANUAL_FIX_ROUNDS = 1;
 const STUFFING_TARGET = 6;
 
 /* ───────────── Vaga ───────────── */
 
 export async function analyzeJob(rawText: string, model?: string): Promise<JobAnalysis> {
-  const analysis = await askClaude({
+  const analysis = await askLLM({
+    label: "Análise da vaga",
     system: JOB_ANALYSIS_SYSTEM,
     prompt: jobAnalysisPrompt(rawText),
     schema: JobAnalysisSchema,
@@ -68,23 +71,26 @@ export async function analyzeJob(rawText: string, model?: string): Promise<JobAn
 
 /** Habilidades adjacentes para os requisitos sem evidência direta (sinal semântico). */
 export async function findAdjacency(profile: Profile, analysis: JobAnalysis, docs: DocText[] = []): Promise<Adjacency> {
+  const mode = await aiMode();
+  if (mode.manual) return []; // sinal opcional: no modo copiar e colar, economiza uma colagem
   const evidence = withDocuments(profile, docs);
   const missing = computeCoverage(evidence, analysis, [])
     .filter((c) => c.status === "nenhuma")
     .map((c) => c.name);
   // Documentos entram recortados: aqui só importa saber se comprovam algum requisito.
-  const docText = new Map(docsForPrompt(docs, 60_000).docs.map((d) => [d.id, d.text]));
+  const docText = new Map(docsForPrompt(docs, Math.min(60_000, mode.docsBudget)).docs.map((d) => [d.id, d.text]));
   const facts = flattenFacts(evidence)
     .filter((f) => f.text.trim())
     .map((f) => (docText.has(f.id) ? { ...f, text: `[documento ${f.docName}] ${docText.get(f.id)}` } : f));
   const skills = [...new Set([...profile.skills.map((s) => s.name), ...facts.flatMap((f) => f.skills)])].filter(Boolean);
   if (!missing.length || (!skills.length && !facts.length)) return [];
   try {
-    const { items } = await askClaude({
+    const { items } = await askLLM({
+      label: "Habilidades relacionadas",
+      fast: true,
       system: ADJACENCY_SYSTEM,
       prompt: adjacencyPrompt(missing, skills, facts),
       schema: AdjacencySchema,
-      model: FAST_MODEL,
     });
     // O modelo só pode apontar para habilidades e fatos que existem de verdade.
     const skillSet = new Set(skills.map(norm));
@@ -133,7 +139,7 @@ const ImportSchema = z.object({
 });
 
 export async function importProfile(text: string, model?: string): Promise<Profile> {
-  const raw = await askClaude({ system: IMPORT_SYSTEM, prompt: importPrompt(text), schema: ImportSchema, model });
+  const raw = await askLLM({ label: "Importação do currículo", system: IMPORT_SYSTEM, prompt: importPrompt(text), schema: ImportSchema, model });
   const facts = (list: { text: string; skills: string[] }[]) => list.map((f) => ({ id: uid("f"), ...f }));
   return ProfileSchema.parse({
     contact: raw.contact,
@@ -155,8 +161,9 @@ const SuggestedFactsSchema = z.object({
 });
 
 export async function suggestProjectFacts(project: { name: string; description: string; facts: string[] }, docs: DocText[]) {
-  const prompted = docsForPrompt(docs, 120_000);
-  const { facts } = await askClaude({
+  const prompted = docsForPrompt(docs, Math.min(120_000, (await aiMode()).docsBudget));
+  const { facts } = await askLLM({
+    label: "Fatos dos documentos do projeto",
     system: SUGGEST_FACTS_SYSTEM,
     prompt: suggestFactsPrompt(project, prompted.docs),
     schema: SuggestedFactsSchema,
@@ -225,7 +232,8 @@ export async function generateCoverLetter(
   notes: string,
   model?: string,
 ): Promise<CoverLetter> {
-  const raw = await askClaude({
+  const raw = await askLLM({
+    label: "Carta de apresentação",
     system: coverLetterSystem(resume.language),
     prompt: coverLetterPrompt(analysis, resume, temperature, notes),
     schema: CoverLetterLLMSchema,
@@ -235,10 +243,11 @@ export async function generateCoverLetter(
 }
 
 async function screen(profile: Profile, analysis: JobAnalysis, resume: TailoredResume, model?: string): Promise<Screener | null> {
+  if ((await aiMode()).manual) return null; // segundo sinal opcional: pulado no modo copiar e colar
   try {
     // O screener lê o currículo sem dados de contato, como um ATS anonimizado.
     const doc = buildResumeDoc(resume, { ...profile.contact, email: "", phone: "", linkedin: "", github: "", website: "" }, analysis.job_title);
-    return await askClaude({ system: SCREENER_SYSTEM, prompt: screenerPrompt(analysis, renderTxt(doc)), schema: ScreenerSchema, model });
+    return await askLLM({ label: "Triagem simulada", system: SCREENER_SYSTEM, prompt: screenerPrompt(analysis, renderTxt(doc)), schema: ScreenerSchema, model });
   } catch {
     return null; // segundo sinal é opcional
   }
@@ -266,7 +275,8 @@ export function revisionTargets(evaluation: Evaluation, coverage: ReturnType<typ
 export interface GenerateOptions {
   temperature: Temperature;
   template: Template;
-  model: string;
+  /** Modelo escolhido na interface; vazio = padrão do motor configurado. */
+  model?: string;
   coverLetter: boolean;
   notes: string;
 }
@@ -285,15 +295,18 @@ export async function generateVersion(
   const evidence = withDocuments(profile, docs);
   const coverage = computeCoverage(evidence, analysis, job.adjacency);
   const system = generationSystem(analysis.language);
-  const prompted = docsForPrompt(docs);
+  const mode = await aiMode();
+  const prompted = docsForPrompt(docs, mode.docsBudget);
+  const fixRounds = mode.manual ? MANUAL_FIX_ROUNDS : MAX_FIX_ROUNDS;
 
   progress(
     "Escrevendo o currículo",
-    [`nível ${opts.temperature}, modelo ${opts.model}`, docs.length ? `${docs.length} documento(s) de projeto` : "", prompted.truncated.length ? `lidos em parte: ${prompted.truncated.join(", ")}` : ""]
+    [`nível ${opts.temperature}${opts.model ? `, modelo ${opts.model}` : ""}`, docs.length ? `${docs.length} documento(s) de projeto` : "", prompted.truncated.length ? `lidos em parte: ${prompted.truncated.join(", ")}` : ""]
       .filter(Boolean)
       .join("; "),
   );
-  let llm = await askClaude({
+  let llm = await askLLM({
+    label: "Geração do currículo",
     system,
     prompt: generationPrompt({ profile, analysis, coverage, temperature: opts.temperature, notes: opts.notes, docs: prompted.docs }),
     schema: ResumeLLMSchema,
@@ -304,17 +317,17 @@ export async function generateVersion(
   progress("Verificando grounding e score");
   let evaluation: Evaluation = await evaluate(evidence, analysis, resume, opts.template, job.adjacency);
 
-  for (let round = 1; round <= MAX_FIX_ROUNDS && hasErrors(evaluation.grounding); round++) {
+  for (let round = 1; round <= fixRounds && hasErrors(evaluation.grounding); round++) {
     const errors = evaluation.grounding.filter((g) => g.severity === "erro");
-    progress(`Corrigindo ${errors.length} trecho(s) sem evidência`, `rodada ${round} de ${MAX_FIX_ROUNDS}`);
-    llm = await askClaude({ system, prompt: fixPrompt(llm, errors), schema: ResumeLLMSchema, model: opts.model });
+    progress(`Corrigindo ${errors.length} trecho(s) sem evidência`, `rodada ${round} de ${fixRounds}`);
+    llm = await askLLM({ label: `Correção de trechos sem evidência (rodada ${round})`, system, prompt: fixPrompt(llm, errors), schema: ResumeLLMSchema, model: opts.model });
     resume = hydrate(llm, profile, analysis);
     evaluation = await evaluate(evidence, analysis, resume, opts.template, job.adjacency);
   }
 
   // Loop de otimização: uma revisão dirigida, aceita só se melhorar o score sem quebrar o grounding.
   const targets = revisionTargets(evaluation, coverage, evidence);
-  if (!hasErrors(evaluation.grounding) && (targets.missing.length || targets.stuffed.length)) {
+  if (!mode.manual && !hasErrors(evaluation.grounding) && (targets.missing.length || targets.stuffed.length)) {
     progress(
       "Otimizando para o ATS",
       [targets.missing.length ? `incluir ${targets.missing.map((m) => m.name).join(", ")}` : "", targets.stuffed.length ? `reduzir repetições de ${targets.stuffed.map((s) => s.name).join(", ")}` : ""]
@@ -322,7 +335,7 @@ export async function generateVersion(
         .join("; "),
     );
     try {
-      const revisedLlm = await askClaude({ system, prompt: revisePrompt(llm, targets), schema: ResumeLLMSchema, model: opts.model });
+      const revisedLlm = await askLLM({ label: "Otimização para o ATS", system, prompt: revisePrompt(llm, targets), schema: ResumeLLMSchema, model: opts.model });
       const revised = hydrate(revisedLlm, profile, analysis);
       const revisedEval = await evaluate(evidence, analysis, revised, opts.template, job.adjacency);
       if (!hasErrors(revisedEval.grounding) && revisedEval.score.total > evaluation.score.total) {
@@ -348,7 +361,7 @@ export async function generateVersion(
     createdAt: new Date().toISOString(),
     temperature: opts.temperature,
     template: opts.template,
-    model: opts.model,
+    model: opts.model || mode.provider,
     resume,
     coverLetter,
     screener,
