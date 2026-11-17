@@ -10,6 +10,7 @@
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-4dffa6?style=for-the-badge&logo=tailwindcss&logoColor=4dffa6&labelColor=0a1226)](https://tailwindcss.com/)
 [![Multi-LLM](https://img.shields.io/badge/Motor_IA-Multi--Provider-3de1ff?style=for-the-badge&logo=sparkles&logoColor=3de1ff&labelColor=0a1226)](#-motor-de-ia-multi-provider)
 [![ATS Ready](https://img.shields.io/badge/ATS_Parse-100%25_Verificado-a35cff?style=for-the-badge&logo=checkmarx&logoColor=a35cff&labelColor=0a1226)](#-arquitetura-do-pipeline-ats)
+[![License: MIT](https://img.shields.io/badge/License-MIT-ff4d9a?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=0a1226)](./LICENSE)
 
 <p align="center">
   <strong>Gerador local de currículos sob medida otimizado para filtros ATS e triagens de IA (Gupy, Workday, Greenhouse, Lever)</strong><br />
@@ -181,6 +182,12 @@ curriculum-gen/
 ├── docs/                     # Plano de implementação, screenshots e assets visuais
 └── data/                     # Armazenamento local (perfil, vagas, documentos e ajustes de IA — ignorado pelo Git)
 ```
+
+<img src="./docs/assets/rainbow-line.svg" alt="" width="100%" />
+
+## 📄 Licença
+
+Este projeto é distribuído sob a licença [MIT](./LICENSE).
 
 <img src="./docs/assets/rainbow-line.svg" alt="" width="100%" />
 
