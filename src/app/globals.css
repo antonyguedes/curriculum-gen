@@ -1,0 +1,370 @@
+@import "tailwindcss";
+
+/* ───────────── Tokens ─────────────
+   Escuro azulado + espectro arco-íris. Os nomes viram utilitários (bg-panel, text-neon…). */
+@theme {
+  --color-ink: #04060c;
+  --color-panel: #0a1226;
+  --color-panel-2: #0e1830;
+  --color-panel-3: #14213f;
+  --color-line: #1c2b52;
+  --color-line-strong: #2b3f74;
+
+  --color-fg: #f1f5ff;
+  --color-muted: #a3b0d4;
+  --color-subtle: #64739e;
+
+  /* espectro */
+  --color-red: #ff4d6d;
+  --color-orange: #ff9a3d;
+  --color-yellow: #ffd84d;
+  --color-green: #4dffa6;
+  --color-neon: #3de1ff; /* ciano: acento principal, como o brilho das bordas na referência */
+  --color-blue: #4d7cff;
+  --color-plasma: #a35cff;
+  --color-flare: #ff4d9a;
+
+  --color-ok: #4dffa6;
+  --color-warn: #ffb340;
+  --color-bad: #ff4d6d;
+  --color-info: #4d9bff;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --animate-rise: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-glow: pulse-glow 1.8s ease-in-out infinite;
+  --animate-scan: scan 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-spin-slow: spin 40s linear infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(0.9);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+  @keyframes scan {
+    from {
+      transform: translateX(-120%);
+    }
+    to {
+      transform: translateX(220%);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+}
+
+/* Ângulo animável: faz a borda arco-íris girar. */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes angle {
+  to {
+    --angle: 360deg;
+  }
+}
+@keyframes aurora {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-3%, 4%, 0) rotate(-6deg) scale(0.96);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+@keyframes sheen {
+  from {
+    transform: translateX(-100%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+@keyframes orbit-dash {
+  to {
+    stroke-dashoffset: -400;
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dasharray: 0 999;
+  }
+}
+
+:root {
+  color-scheme: dark;
+  --rainbow: #ff4d6d, #ff9a3d, #ffd84d, #4dffa6, #3de1ff, #4d7cff, #a35cff, #ff4d6d;
+}
+
+/* Só o html pinta o fundo: assim as camadas do Backdrop (z-index negativo) ficam visíveis. */
+html {
+  background: var(--color-ink);
+}
+body {
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgb(61 225 255 / 0.3);
+  color: #fff;
+}
+
+/* ───────────── Fundo ───────────── */
+
+.backdrop-aurora {
+  position: absolute;
+  inset: -20%;
+  filter: blur(90px) saturate(140%);
+  opacity: 0.55;
+  animation: aurora 32s ease-in-out infinite;
+  background:
+    radial-gradient(28% 34% at 78% 12%, #ff3b3b 0%, transparent 70%),
+    radial-gradient(30% 30% at 60% 22%, #ff9a3d 0%, transparent 70%),
+    radial-gradient(34% 36% at 46% 52%, #3dff8a 0%, transparent 72%),
+    radial-gradient(34% 36% at 22% 78%, #1f6bff 0%, transparent 72%),
+    radial-gradient(26% 30% at 90% 70%, #3de1ff 0%, transparent 70%),
+    radial-gradient(22% 26% at 8% 30%, #a35cff 0%, transparent 70%);
+}
+.backdrop-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(170 200 255 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(170 200 255 / 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 20%, transparent 85%);
+}
+.backdrop-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 120% 90% at 50% 0%, transparent 40%, var(--color-ink) 95%);
+}
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 0 6px 1px rgb(255 255 255 / 0.6);
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+/* ───────────── Superfícies ───────────── */
+
+/* Tile de vidro azul-escuro com borda luminosa (rim light), como na referência. */
+@utility tile {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(160deg, rgb(20 36 74 / 0.78), rgb(8 14 30 / 0.86)) padding-box,
+    linear-gradient(200deg, rgb(160 235 255 / 0.55), rgb(77 124 255 / 0.18) 40%, rgb(77 124 255 / 0.08) 60%, rgb(61 225 255 / 0.45)) border-box;
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    inset 0 0 24px rgb(61 225 255 / 0.05),
+    0 24px 60px -30px rgb(0 0 0 / 0.9),
+    0 0 40px -22px rgb(61 225 255 / 0.5);
+}
+
+/* Interação dos tiles: sobe, a borda acende e um reflexo atravessa. */
+@utility tile-hover {
+  overflow: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.09), transparent);
+    transform: translateX(-100%) skewX(-18deg);
+    pointer-events: none;
+  }
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.12),
+      inset 0 0 30px rgb(61 225 255 / 0.1),
+      0 30px 70px -30px rgb(0 0 0 / 0.9),
+      0 0 50px -14px rgb(61 225 255 / 0.75);
+  }
+  &:hover::after {
+    animation: sheen 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Borda arco-íris girando (botões principais, etapa ativa).
+   Camadas, de baixo para cima: anel arco-íris (fundo do elemento) → halo (::before, opcional)
+   → preenchimento escuro (::after, só dentro da borda) → conteúdo. */
+@utility rainbow-border {
+  position: relative;
+  isolation: isolate;
+  border: 1.5px solid transparent;
+  background: conic-gradient(from var(--angle), var(--rainbow)) border-box;
+  animation: angle 4s linear infinite;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgb(61 225 255 / 0.10), transparent 60%),
+      linear-gradient(160deg, #13224a, #070d1f);
+  }
+}
+
+/* Halo arco-íris desfocado em volta (fica atrás do preenchimento, nunca por cima). */
+@utility rainbow-halo {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    z-index: -2;
+    border-radius: inherit;
+    background: conic-gradient(from var(--angle), var(--rainbow));
+    filter: blur(16px);
+    opacity: 0.5;
+    animation: angle 4s linear infinite;
+    transition: opacity 0.4s;
+  }
+  &:hover::before {
+    opacity: 0.95;
+  }
+}
+
+@utility text-rainbow {
+  background: linear-gradient(95deg, #ff6b6b, #ffb340 22%, #ffe066 38%, #4dffa6 55%, #3de1ff 72%, #a35cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ───────────── Controles nativos ───────────── */
+
+input[type="checkbox"] {
+  accent-color: var(--color-neon);
+}
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(1) hue-rotate(160deg) saturate(3);
+  cursor: pointer;
+}
+select option {
+  background: var(--color-panel-2);
+  color: var(--color-fg);
+}
+:focus-visible {
+  outline: 2px solid var(--color-neon);
+  outline-offset: 2px;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Progresso animável do medidor de score. */
+@property --p {
+  syntax: "<percentage>";
+  initial-value: 0%;
+  inherits: false;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes shrink {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Tooltip: regra própria (o hover: do Tailwind só vale com @media (hover: hover),
+   o que deixaria de fora telas touch e notebooks híbridos). */
+.tt-wrap:hover > .tt-bubble,
+.tt-wrap:focus-within > .tt-bubble {
+  opacity: 1;
+  scale: 1;
+}
+
+/* Entrada do painel de etapa: desliza e foca, a partir da órbita. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0) scale(0.985);
+    filter: blur(8px);
+  }
+}
+@media (max-width: 1023px) {
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 28px, 0) scale(0.985);
+      filter: blur(8px);
+    }
+  }
+}
