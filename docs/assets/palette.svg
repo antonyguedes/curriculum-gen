@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 130" width="100%" fill="none">
+  <rect x="1" y="1" width="1198" height="128" rx="18" fill="#04060c" stroke="#1c2b52" stroke-width="1.5" />
+  <g transform="translate(24, 20)" font-family="JetBrains Mono, ui-monospace, monospace" font-size="11">
+    <!-- Surfaces -->
+    <g transform="translate(0, 0)">
+      <rect width="104" height="58" rx="10" fill="#04060c" stroke="#2b3f74" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-ink</text>
+      <text x="52" y="92" text-anchor="middle" fill="#64739e">#04060C</text>
+    </g>
+    <g transform="translate(116, 0)">
+      <rect width="104" height="58" rx="10" fill="#0a1226" stroke="#2b3f74" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-panel</text>
+      <text x="52" y="92" text-anchor="middle" fill="#64739e">#0A1226</text>
+    </g>
+    <!-- Spectrum -->
+    <g transform="translate(232, 0)">
+      <rect width="104" height="58" rx="10" fill="#ff4d6d" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-red</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#FF4D6D</text>
+    </g>
+    <g transform="translate(348, 0)">
+      <rect width="104" height="58" rx="10" fill="#ff9a3d" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-orange</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#FF9A3D</text>
+    </g>
+    <g transform="translate(464, 0)">
+      <rect width="104" height="58" rx="10" fill="#ffd84d" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-yellow</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#FFD84D</text>
+    </g>
+    <g transform="translate(580, 0)">
+      <rect width="104" height="58" rx="10" fill="#4dffa6" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-green</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#4DFFA6</text>
+    </g>
+    <g transform="translate(696, 0)">
+      <rect width="104" height="58" rx="10" fill="#3de1ff" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-neon</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#3DE1FF</text>
+    </g>
+    <g transform="translate(812, 0)">
+      <rect width="104" height="58" rx="10" fill="#4d7cff" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-blue</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#4D7CFF</text>
+    </g>
+    <g transform="translate(928, 0)">
+      <rect width="104" height="58" rx="10" fill="#a35cff" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-plasma</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#A35CFF</text>
+    </g>
+    <g transform="translate(1044, 0)">
+      <rect width="104" height="58" rx="10" fill="#ff4d9a" />
+      <text x="52" y="76" text-anchor="middle" fill="#f1f5ff" font-weight="600">--color-flare</text>
+      <text x="52" y="92" text-anchor="middle" fill="#a3b0d4">#FF4D9A</text>
+    </g>
+  </g>
+</svg>
+

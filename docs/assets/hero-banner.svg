@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#04060c" />
+      <stop offset="50%" stop-color="#0a1226" />
+      <stop offset="100%" stop-color="#04060c" />
+    </linearGradient>
+    <linearGradient id="rainbow" x1="260" y1="0" x2="940" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff4d6d" />
+      <stop offset="16%" stop-color="#ff9a3d" />
+      <stop offset="33%" stop-color="#ffd84d" />
+      <stop offset="50%" stop-color="#4dffa6" />
+      <stop offset="66%" stop-color="#3de1ff" />
+      <stop offset="83%" stop-color="#4d7cff" />
+      <stop offset="100%" stop-color="#a35cff" />
+    </linearGradient>
+    <linearGradient id="rainbow-border" x1="0" y1="0" x2="1200" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff4d6d" stop-opacity="0.7" />
+      <stop offset="20%" stop-color="#ffd84d" stop-opacity="0.5" />
+      <stop offset="45%" stop-color="#4dffa6" stop-opacity="0.7" />
+      <stop offset="70%" stop-color="#3de1ff" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#a35cff" stop-opacity="0.7" />
+    </linearGradient>
+    <radialGradient id="glow-left" cx="18%" cy="20%" r="45%">
+      <stop offset="0%" stop-color="#a35cff" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#04060c" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glow-center" cx="50%" cy="55%" r="45%">
+      <stop offset="0%" stop-color="#4dffa6" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#04060c" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glow-right" cx="85%" cy="25%" r="45%">
+      <stop offset="0%" stop-color="#ff4d6d" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#04060c" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1c2b52" stroke-width="0.7" stroke-opacity="0.45" />
+    </pattern>
+  </defs>
+
+  <!-- Base Dark Canvas -->
+  <rect x="2" y="2" width="1196" height="316" rx="24" fill="url(#bg)" />
+  <rect x="2" y="2" width="1196" height="316" rx="24" fill="url(#grid)" />
+  <rect x="2" y="2" width="1196" height="316" rx="24" fill="url(#glow-left)" />
+  <rect x="2" y="2" width="1196" height="316" rx="24" fill="url(#glow-center)" />
+  <rect x="2" y="2" width="1196" height="316" rx="24" fill="url(#glow-right)" />
+  <rect x="2" y="2" width="1196" height="316" rx="24" stroke="url(#rainbow-border)" stroke-width="2" />
+
+  <!-- Cosmic Stars -->
+  <circle cx="95" cy="58" r="1.5" fill="#3de1ff" opacity="0.8" />
+  <circle cx="210" cy="95" r="2" fill="#4dffa6" opacity="0.7" />
+  <circle cx="340" cy="48" r="1.2" fill="#f1f5ff" opacity="0.6" />
+  <circle cx="880" cy="54" r="1.8" fill="#ffd84d" opacity="0.8" />
+  <circle cx="1040" cy="86" r="2" fill="#ff4d6d" opacity="0.75" />
+  <circle cx="1110" cy="240" r="1.5" fill="#a35cff" opacity="0.7" />
+  <circle cx="140" cy="250" r="1.8" fill="#ff9a3d" opacity="0.7" />
+
+  <!-- Subtle Orbital Arc Behind Title -->
+  <ellipse cx="600" cy="165" rx="430" ry="110" stroke="url(#rainbow)" stroke-width="1.2" stroke-dasharray="5 6" opacity="0.35" />
+
+  <!-- Top Pill Badge -->
+  <rect x="445" y="34" width="310" height="28" rx="14" fill="#0e1830" stroke="#2b3f74" stroke-width="1" />
+  <circle cx="465" cy="48" r="4" fill="#4dffa6" />
+  <text x="610" y="52" text-anchor="middle" fill="#a3b0d4" font-family="JetBrains Mono, ui-monospace, monospace" font-size="11" letter-spacing="1.8">
+    ATS-READY · GROUNDED · MULTI-LLM
+  </text>
+
+  <!-- Main Title -->
+  <text x="600" y="136" text-anchor="middle" font-family="Space Grotesk, Inter, system-ui, sans-serif" font-size="64" font-weight="800" letter-spacing="-1.5">
+    <tspan fill="#f1f5ff">Curriculum-</tspan><tspan fill="url(#rainbow)">Gen</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="176" text-anchor="middle" fill="#a3b0d4" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="400">
+    Gerador de currículos sob medida para filtros ATS e triagens de IA — sem alucinações
+  </text>
+
+  <!-- 5 Orbital Steps Pills -->
+  <g transform="translate(175, 222)" font-family="JetBrains Mono, ui-monospace, monospace" font-size="11.5" font-weight="600">
+    <!-- 01 PERFIL -->
+    <rect x="0" y="0" width="146" height="36" rx="12" fill="#0a1226" stroke="#ff4d6d" stroke-width="1.4" />
+    <circle cx="22" cy="18" r="4" fill="#ff4d6d" />
+    <text x="82" y="22" text-anchor="middle" fill="#f1f5ff" letter-spacing="1">01 · PERFIL</text>
+
+    <line x1="152" y1="18" x2="170" y2="18" stroke="#ff9a3d" stroke-width="1.5" stroke-dasharray="3 3" />
+
+    <!-- 02 VAGA -->
+    <rect x="176" y="0" width="146" height="36" rx="12" fill="#0a1226" stroke="#ffd84d" stroke-width="1.4" />
+    <circle cx="198" cy="18" r="4" fill="#ffd84d" />
+    <text x="258" y="22" text-anchor="middle" fill="#f1f5ff" letter-spacing="1">02 · VAGA</text>
+
+    <line x1="328" y1="18" x2="346" y2="18" stroke="#4dffa6" stroke-width="1.5" stroke-dasharray="3 3" />
+
+    <!-- 03 GERAR -->
+    <rect x="352" y="0" width="146" height="36" rx="12" fill="#0a1226" stroke="#4dffa6" stroke-width="1.4" />
+    <circle cx="374" cy="18" r="4" fill="#4dffa6" />
+    <text x="434" y="22" text-anchor="middle" fill="#f1f5ff" letter-spacing="1">03 · GERAR</text>
+
+    <line x1="504" y1="18" x2="522" y2="18" stroke="#3de1ff" stroke-width="1.5" stroke-dasharray="3 3" />
+
+    <!-- 04 VERIFICAR -->
+    <rect x="528" y="0" width="156" height="36" rx="12" fill="#0a1226" stroke="#3de1ff" stroke-width="1.4" />
+    <circle cx="548" cy="18" r="4" fill="#3de1ff" />
+    <text x="614" y="22" text-anchor="middle" fill="#f1f5ff" letter-spacing="1">04 · VERIFICAR</text>
+
+    <line x1="690" y1="18" x2="708" y2="18" stroke="#a35cff" stroke-width="1.5" stroke-dasharray="3 3" />
+
+    <!-- 05 BAIXAR -->
+    <rect x="714" y="0" width="146" height="36" rx="12" fill="#0a1226" stroke="#a35cff" stroke-width="1.4" />
+    <circle cx="736" cy="18" r="4" fill="#a35cff" />
+    <text x="796" y="22" text-anchor="middle" fill="#f1f5ff" letter-spacing="1">05 · BAIXAR</text>
+  </g>
+</svg>
+
